@@ -755,12 +755,7 @@ select, .key-input {
 
   <!-- ═══ Chat panel ═══ -->
   <div class="panel panel-chat" id="panelChat">
-    <div class="chat-modes" id="chatModes">
-      <button class="mode-btn active" data-mode="freeplay" onclick="setMode(this)">Freeplay</button>
-      <button class="mode-btn" data-mode="scripted" onclick="setMode(this)">Scripted</button>
-      <button class="mode-btn" data-mode="seminar" onclick="setMode(this)">Seminar</button>
-      <button class="mode-btn" data-mode="individual" onclick="setMode(this)">Individual Move</button>
-    </div>
+    <div class="chat-modes" id="chatModes"></div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input" id="chatInput">
       <textarea id="chatTextarea" placeholder="Present a scenario or ask a question..." rows="1"
@@ -1236,6 +1231,7 @@ function init() {
   renderPromptTab();
   renderGuideTab();
   renderSourcesTab();
+  renderModes();
   renderWelcome();
   initResizer();
 }
@@ -1412,6 +1408,7 @@ function toggleSection(id) {
   s.enabled = !s.enabled;
   savePromptEdits();
   renderPromptTab();
+  if (id === 'modes') renderModes();
 }
 
 function toggleEditMode() {
@@ -1424,6 +1421,7 @@ function onEditSection(id, value) {
   s.currentPrompt = value;
   s.modified = (value !== s.prompt);
   savePromptEdits();
+  if (id === 'modes') renderModes();
 }
 
 function resetPrompt() {
@@ -1436,6 +1434,7 @@ function resetPrompt() {
   state.editMode = false;
   savePromptEdits();
   renderPromptTab();
+  renderModes();
 }
 
 function renderGuideTab() {
@@ -1528,6 +1527,37 @@ function renderWelcome() {
     </div>
     <p style="margin-top:16px;font-size:11px;color:var(--text-secondary)">Use the <strong>Learn</strong> panel on the left to explore how the system prompt was built and why each section exists.</p>
   </div>`;
+}
+
+const DEFAULT_MODES = [
+  { id: 'freeplay', label: 'Freeplay' },
+  { id: 'scripted', label: 'Scripted' },
+  { id: 'seminar', label: 'Seminar' },
+  { id: 'individual', label: 'Individual Move' },
+];
+
+function parseModes() {
+  const modeSection = state.sections.find(s => s.id === 'modes');
+  if (!modeSection || !modeSection.enabled) return DEFAULT_MODES;
+  const text = modeSection.currentPrompt;
+  const matches = [...text.matchAll(/MODE\s*\d+\s*[—–-]\s*([A-Z][A-Z /]+)/g)];
+  if (matches.length === 0) return DEFAULT_MODES;
+  return matches.map(m => {
+    const raw = m[1].trim();
+    const label = raw.split(/\s*[\(（]/).shift().trim();
+    const id = label.toLowerCase().replace(/\s+/g, '-');
+    const titleCase = label.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    return { id, label: titleCase };
+  });
+}
+
+function renderModes() {
+  const modes = parseModes();
+  const container = $('chatModes');
+  container.innerHTML = modes.map((m, i) =>
+    `<button class="mode-btn ${i === 0 ? 'active' : ''}" data-mode="${m.id}" onclick="setMode(this)">${m.label}</button>`
+  ).join('');
+  if (!modes.some(m => m.id === state.mode)) state.mode = modes[0]?.id || 'freeplay';
 }
 
 function setMode(btn) {
