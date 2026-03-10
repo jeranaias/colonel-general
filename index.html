@@ -743,6 +743,11 @@ select, .key-input {
   margin-top: 24px;
   text-align: left;
 }
+.chat-starters {
+  max-width: 90%;
+  align-self: flex-start;
+  margin-top: 0;
+}
 .scenario-starters h3 {
   font-size: 11px;
   text-transform: uppercase;
@@ -1506,6 +1511,8 @@ function connect() {
   state.messages.push({ role: 'assistant', content: greeting });
   addMsg('assistant', greeting, true);
 
+  showScenarioCards(chat);
+
   $('chatTextarea').focus();
 }
 
@@ -1778,6 +1785,21 @@ function renderWelcome() {
   </div>`;
 }
 
+function showScenarioCards(chat) {
+  const starters = document.createElement('div');
+  starters.className = 'scenario-starters chat-starters';
+  starters.innerHTML = `<h3>Quick-Start Scenarios</h3><div class="scenario-grid">${
+    SCENARIOS.map((s, i) =>
+      `<div class="scenario-card" onclick="useScenario(${i});this.closest('.chat-starters').remove()">
+        <div class="sc-title">${s.title}</div>
+        <div class="sc-desc">${s.desc}</div>
+      </div>`
+    ).join('')
+  }</div>`;
+  chat.appendChild(starters);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 function useScenario(idx) {
   if (!state.connected) {
     toast('Connect to an AI provider first', 'error');
@@ -1972,6 +1994,7 @@ function newConversation() {
   const greeting = `Understood. A new exercise. I am ready to receive the scenario.\n\nWhat situation do you wish to assess?`;
   state.messages.push({ role: 'assistant', content: greeting });
   addMsg('assistant', greeting, true);
+  showScenarioCards(chat);
   toast('New conversation started');
 }
 
@@ -1997,6 +2020,10 @@ async function sendMessage() {
   const input = $('chatTextarea');
   const text = input.value.trim();
   if (!text) return;
+
+  // Remove scenario starters if still visible
+  const cs = document.querySelector('.chat-starters');
+  if (cs) cs.remove();
 
   const modeTag = `[WARGAME MODE: ${state.mode.toUpperCase()}]\n\n`;
   state.messages.push({ role: 'user', content: modeTag + text });
