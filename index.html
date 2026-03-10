@@ -414,17 +414,31 @@ select, .key-input {
 
 /* ─── Sources tab ─── */
 .source-card {
+  display: block;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 12px 14px;
   margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.source-card:hover {
+  border-color: var(--accent-gold);
+  background: var(--bg-hover);
 }
 .source-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 4px;
+}
+.source-link-icon {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: 4px;
 }
 .source-meta {
   font-size: 11px;
@@ -1048,29 +1062,29 @@ Address which domains are most relevant and how effects across domains can be co
 ];
 
 const SOURCES = [
-  { title: 'Military Doctrine of the Russian Federation', author: 'Presidential Decree', year: 2014, cat: 'doctrine', desc: 'Identifies NATO as primary external threat. Defines the conflict spectrum. Broadened military risks to include information warfare.' },
-  { title: 'National Security Strategy of the Russian Federation', author: 'Presidential Decree No. 683', year: 2015, cat: 'doctrine', desc: 'Blames US/EU for Ukraine crisis. Identifies maintaining influence in post-Soviet space as key priority.' },
-  { title: 'Basic Principles of State Policy on Nuclear Deterrence', author: 'Executive Order, V. Putin', year: 2020, cat: 'doctrine', desc: 'First standalone nuclear deterrence document. Defines four conditions for nuclear employment.' },
-  { title: 'The Value of Science Is in the Foresight (Ценность науки в предвидении)', author: 'Gen. Valery Gerasimov', year: 2013, cat: 'doctrine', desc: 'Analysis of modern conflict. The 4:1 non-military to military ratio. Often mischaracterized as "Gerasimov Doctrine."' },
-  { title: 'The Nature and Content of a New-Generation War', author: 'S.G. Chekinov & S.A. Bogdanov', year: 2013, cat: 'doctrine', desc: 'Voyennaya Mysl No. 10. Re-division of territory through indirect approaches and nonmilitary means.' },
-  { title: 'Getting Gerasimov Right', author: 'Charles K. Bartles', year: 2016, cat: 'doctrine', desc: 'Military Review. Corrects the "Gerasimov Doctrine" myth — the article reflects threat perception, not prescriptive doctrine.' },
-  { title: "Russia's Reflexive Control Theory and the Military", author: 'Timothy L. Thomas', year: 2004, cat: 'doctrine', desc: 'Journal of Slavic Military Studies Vol. 17 No. 2. Defines reflexive control as conveying information to incline an opponent to voluntarily make a predetermined decision.' },
-  { title: 'The Chekinov-Bogdanov Commentaries of 2010-2017', author: 'Timothy Thomas', year: 2021, cat: 'doctrine', desc: 'FMSO. Book-length analysis of all 13 Chekinov-Bogdanov articles in Voyennaya Mysl.' },
-  { title: 'Russian Assessments and Applications of the Correlation of Forces and Means', author: 'Reach, Kilambi & Cozad', year: 2020, cat: 'doctrine', desc: 'RAND RR-4235-OSD. Modern Russian COFM uses qualimetric methods encompassing military, economic, and political factors.' },
-  { title: 'The Russian Way of War', author: 'Grau & Bartles', year: 2016, cat: 'doctrine', desc: 'FMSO. Force structure, organization, institutional culture, centralized command culture.' },
-  { title: 'Russian Nuclear Strategy and Conventional Inferiority', author: 'Kristin Ven Bruusgaard', year: 2020, cat: 'doctrine', desc: 'Journal of Strategic Studies (Perlmutter Prize). Argues improved conventional capabilities will DELAY nuclear use.' },
-  { title: 'Soviet Military Deception in the Second World War', author: 'David M. Glantz', year: 1989, cat: 'historical', desc: 'Comprehensive documentation of maskirovka at strategic, operational, and tactical levels.' },
-  { title: 'Strategy (Стратегия)', author: 'Alexander Svechin', year: 1927, cat: 'historical', desc: 'Originated operational art as the intermediate level between tactics and strategy.' },
-  { title: 'Active Measures: The Secret History of Disinformation', author: 'Thomas Rid', year: 2020, cat: 'historical', desc: 'Comprehensive account of disinformation and political warfare from the interwar period to contemporary operations.' },
-  { title: 'Algebra of Conscience', author: 'Vladimir A. Lefebvre', year: 1982, cat: 'historical', desc: 'Foundational work on reflexive control theory. Mathematical models of decision-making in conflict.' },
-  { title: 'Anthropic Documentation: System Prompts, XML Tags, Multishot Prompting', author: 'Anthropic', year: 2025, cat: 'engineering', desc: 'Official guidance on structuring system prompts, using XML tags as semantic boundaries, and providing few-shot examples.' },
-  { title: 'CO-STAR Prompt Framework', author: 'Sheila Teo', year: 2024, cat: 'engineering', desc: 'Winner of Singapore GPT-4 Prompt Engineering Competition. Context, Objective, Style, Tone, Audience, Response.' },
-  { title: 'Role-Aware Reasoning (RAR)', author: 'Various', year: 2025, cat: 'engineering', desc: 'Converts character traits into rule-like reasoning prompts. Solves attention diversion and style drift.' },
-  { title: 'The Pink Elephant Problem', author: '16x Engineer', year: 2024, cat: 'engineering', desc: 'Demonstrates that negative prompts ("don\'t do X") perform worse than positive framing ("do Y") based on Ironic Process Theory.' },
-  { title: 'Exia Labs + West Point CRADA: AI Red Agents', author: 'Exia Labs', year: 2026, cat: 'military-ai', desc: 'AI agents for near-peer adversary simulation. Finding: simplified prompts delivered more realistic results than over-specified ones.' },
-  { title: 'MIPB "Know Thy Enemy": Digital Enemy Commanders', author: 'MIPB', year: 2025, cat: 'military-ai', desc: 'AI personas as digital enemy commanders trained on adversary doctrine for virtual consultations.' },
-  { title: 'Seven Reflections of a Red Commander', author: 'TRADOC Mad Scientist', year: 2025, cat: 'military-ai', desc: 'Mirror-imaging identified as the core problem AI Red agents solve. Human red-players unconsciously adopt friendly-force thinking.' },
-  { title: 'AI-Enabled Wargaming at CGSC', author: 'Small Wars Journal', year: 2026, cat: 'military-ai', desc: 'AI-enabled wargaming becoming default method in CGSC planning exercises for AY 2026-2027.' },
+  { title: 'Military Doctrine of the Russian Federation', author: 'Presidential Decree', year: 2014, cat: 'doctrine', url: 'https://rusemb.org.uk/press/2029', desc: 'Identifies NATO as primary external threat. Defines the conflict spectrum. Broadened military risks to include information warfare.' },
+  { title: 'National Security Strategy of the Russian Federation', author: 'Presidential Decree No. 683', year: 2015, cat: 'doctrine', url: 'https://www.russiamatters.org/node/21421', desc: 'Blames US/EU for Ukraine crisis. Identifies maintaining influence in post-Soviet space as key priority.' },
+  { title: 'Basic Principles of State Policy on Nuclear Deterrence', author: 'Executive Order, V. Putin', year: 2020, cat: 'doctrine', url: 'https://www.armscontrol.org/act/2020-07/features/russia%E2%80%99s-nuclear-deterrence-basic-principles', desc: 'First standalone nuclear deterrence document. Defines four conditions for nuclear employment.' },
+  { title: 'The Value of Science Is in the Foresight (Ценность науки в предвидении)', author: 'Gen. Valery Gerasimov', year: 2013, cat: 'doctrine', url: 'https://www.armyupress.army.mil/Journals/Military-Review/English-Edition-Archives/January-February-2016/Getting-Gerasimov-Right/', desc: 'Analysis of modern conflict. The 4:1 non-military to military ratio. Often mischaracterized as "Gerasimov Doctrine."' },
+  { title: 'The Nature and Content of a New-Generation War', author: 'S.G. Chekinov & S.A. Bogdanov', year: 2013, cat: 'doctrine', url: 'https://www.eastviewpress.com/resources/journals/military-thought/', desc: 'Voyennaya Mysl No. 10. Re-division of territory through indirect approaches and nonmilitary means.' },
+  { title: 'Getting Gerasimov Right', author: 'Charles K. Bartles', year: 2016, cat: 'doctrine', url: 'https://www.armyupress.army.mil/Journals/Military-Review/English-Edition-Archives/January-February-2016/Getting-Gerasimov-Right/', desc: 'Military Review. Corrects the "Gerasimov Doctrine" myth — the article reflects threat perception, not prescriptive doctrine.' },
+  { title: "Russia's Reflexive Control Theory and the Military", author: 'Timothy L. Thomas', year: 2004, cat: 'doctrine', url: 'https://www.tandfonline.com/doi/abs/10.1080/13518040490450529', desc: 'Journal of Slavic Military Studies Vol. 17 No. 2. Defines reflexive control as conveying information to incline an opponent to voluntarily make a predetermined decision.' },
+  { title: 'The Chekinov-Bogdanov Commentaries of 2010-2017', author: 'Timothy Thomas', year: 2021, cat: 'doctrine', url: 'https://community.apan.org/wg/tradoc-g2/fmso/', desc: 'FMSO. Book-length analysis of all 13 Chekinov-Bogdanov articles in Voyennaya Mysl.' },
+  { title: 'Russian Assessments and Applications of the Correlation of Forces and Means', author: 'Reach, Kilambi & Cozad', year: 2020, cat: 'doctrine', url: 'https://www.rand.org/pubs/research_reports/RR4235.html', desc: 'RAND RR-4235-OSD. Modern Russian COFM uses qualimetric methods encompassing military, economic, and political factors.' },
+  { title: 'The Russian Way of War', author: 'Grau & Bartles', year: 2016, cat: 'doctrine', url: 'https://community.apan.org/wg/tradoc-g2/fmso/', desc: 'FMSO. Force structure, organization, institutional culture, centralized command culture.' },
+  { title: 'Russian Nuclear Strategy and Conventional Inferiority', author: 'Kristin Ven Bruusgaard', year: 2020, cat: 'doctrine', url: 'https://www.tandfonline.com/doi/full/10.1080/01402390.2020.1818070', desc: 'Journal of Strategic Studies (Perlmutter Prize). Argues improved conventional capabilities will DELAY nuclear use.' },
+  { title: 'Soviet Military Deception in the Second World War', author: 'David M. Glantz', year: 1989, cat: 'historical', url: 'https://www.routledge.com/Soviet-Military-Deception-in-the-Second-World-War/Glantz/p/book/9780714633725', desc: 'Comprehensive documentation of maskirovka at strategic, operational, and tactical levels.' },
+  { title: 'Strategy (Стратегия)', author: 'Alexander Svechin', year: 1927, cat: 'historical', url: 'https://www.eastviewpress.com/resources/journals/military-thought/', desc: 'Originated operational art as the intermediate level between tactics and strategy.' },
+  { title: 'Active Measures: The Secret History of Disinformation', author: 'Thomas Rid', year: 2020, cat: 'historical', url: 'https://us.macmillan.com/books/9780374287269/activemeasures', desc: 'Comprehensive account of disinformation and political warfare from the interwar period to contemporary operations.' },
+  { title: 'Algebra of Conscience', author: 'Vladimir A. Lefebvre', year: 1982, cat: 'historical', url: 'https://link.springer.com/book/10.1007/978-94-009-7366-2', desc: 'Foundational work on reflexive control theory. Mathematical models of decision-making in conflict.' },
+  { title: 'Anthropic Documentation: System Prompts, XML Tags, Multishot Prompting', author: 'Anthropic', year: 2025, cat: 'engineering', url: 'https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags', desc: 'Official guidance on structuring system prompts, using XML tags as semantic boundaries, and providing few-shot examples.' },
+  { title: 'CO-STAR Prompt Framework', author: 'Sheila Teo', year: 2024, cat: 'engineering', url: 'https://towardsdatascience.com/how-i-won-singapores-gpt-4-prompt-engineering-competition-34c195a93d41/', desc: 'Winner of Singapore GPT-4 Prompt Engineering Competition. Context, Objective, Style, Tone, Audience, Response.' },
+  { title: 'Role-Aware Reasoning (RAR)', author: 'Various', year: 2025, cat: 'engineering', url: 'https://arxiv.org/abs/2506.01748', desc: 'Converts character traits into rule-like reasoning prompts. Solves attention diversion and style drift.' },
+  { title: 'The Pink Elephant Problem', author: '16x Engineer', year: 2024, cat: 'engineering', url: 'https://16x.engineer/blog/pink-elephant-problem', desc: 'Demonstrates that negative prompts ("don\'t do X") perform worse than positive framing ("do Y") based on Ironic Process Theory.' },
+  { title: 'Exia Labs + West Point CRADA: AI Red Agents', author: 'Exia Labs', year: 2026, cat: 'military-ai', url: 'https://exialabs.com/', desc: 'AI agents for near-peer adversary simulation. Finding: simplified prompts delivered more realistic results than over-specified ones.' },
+  { title: 'MIPB "Know Thy Enemy": Digital Enemy Commanders', author: 'MIPB', year: 2025, cat: 'military-ai', url: 'https://www.ikn.army.mil/apps/MIPBW/', desc: 'AI personas as digital enemy commanders trained on adversary doctrine for virtual consultations.' },
+  { title: 'Seven Reflections of a Red Commander', author: 'TRADOC Mad Scientist', year: 2025, cat: 'military-ai', url: 'https://madsciblog.tradoc.army.mil/', desc: 'Mirror-imaging identified as the core problem AI Red agents solve. Human red-players unconsciously adopt friendly-force thinking.' },
+  { title: 'AI-Enabled Wargaming at CGSC', author: 'Small Wars Journal', year: 2026, cat: 'military-ai', url: 'https://smallwarsjournal.com/', desc: 'AI-enabled wargaming becoming default method in CGSC planning exercises for AY 2026-2027.' },
 ];
 
 // ╔═══════════════════════════╗
@@ -1429,11 +1443,11 @@ function renderSourcesTab() {
   const filtered = state.sourceFilter === 'all' ? SOURCES : SOURCES.filter(s => s.cat === state.sourceFilter);
   filtered.forEach(s => {
     const catClass = 'cat-' + (s.cat === 'military-ai' ? 'military-ai' : s.cat);
-    html += `<div class="source-card">
-      <div class="source-title">${s.title}</div>
+    html += `<a class="source-card" href="${s.url}" target="_blank" rel="noopener noreferrer">
+      <div class="source-title">${s.title} <span class="source-link-icon">&#8599;</span></div>
       <div class="source-meta">${s.author} (${s.year}) <span class="source-cat ${catClass}">${s.cat}</span></div>
       <div class="source-desc">${s.desc}</div>
-    </div>`;
+    </a>`;
   });
   $('tabSources').innerHTML = html;
 }
