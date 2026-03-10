@@ -50,14 +50,34 @@ body {
   flex-direction: column;
 }
 
-/* ─── Top accent line ─── */
+/* ─── Top accent line (animated) ─── */
 body::before {
   content: '';
   display: block;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-gold), var(--accent-red));
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-gold), var(--accent-red), var(--accent-gold), var(--accent-red));
+  background-size: 200% 100%;
+  animation: accent-sweep 8s linear infinite;
   flex-shrink: 0;
 }
+@keyframes accent-sweep {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Subtle background grid ─── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(192, 57, 43, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 57, 43, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
 
 /* ─── Header ─── */
 .header {
@@ -76,12 +96,22 @@ body::before {
   align-items: center;
   gap: 10px;
 }
-.header-star { color: var(--accent-red); font-size: 22px; }
+.header-star {
+  color: var(--accent-red);
+  font-size: 22px;
+  text-shadow: 0 0 12px rgba(192, 57, 43, 0.6);
+  animation: star-glow 3s ease-in-out infinite;
+}
+@keyframes star-glow {
+  0%, 100% { text-shadow: 0 0 12px rgba(192, 57, 43, 0.6); }
+  50% { text-shadow: 0 0 20px rgba(192, 57, 43, 0.9), 0 0 40px rgba(192, 57, 43, 0.3); }
+}
 .header-title {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-heading);
+  text-shadow: 0 0 20px rgba(192, 57, 43, 0.15);
 }
 .header-subtitle {
   font-size: 11px;
@@ -126,9 +156,11 @@ select, .key-input {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 12px rgba(192, 57, 43, 0.3);
 }
-.btn:hover { filter: brightness(1.15); }
-.btn:disabled { opacity: 0.4; cursor: default; }
+.btn:hover { filter: brightness(1.15); box-shadow: 0 0 20px rgba(192, 57, 43, 0.5); }
+.btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
 .btn-outline {
   background: transparent;
   border: 1px solid var(--border);
@@ -232,6 +264,7 @@ select, .key-input {
 .panel-tab.active {
   color: var(--accent-gold);
   border-bottom-color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(212, 160, 23, 0.3);
 }
 .tab-content {
   flex: 1;
@@ -271,7 +304,15 @@ select, .key-input {
   border-radius: 6px;
   margin-bottom: 10px;
   overflow: hidden;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.section-card:hover {
+  border-color: var(--border-light);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+.section-card.open {
+  border-color: rgba(192, 57, 43, 0.3);
+  box-shadow: 0 0 15px rgba(192, 57, 43, 0.08);
 }
 .section-card.disabled { opacity: 0.4; }
 .section-header {
@@ -431,11 +472,13 @@ select, .key-input {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: all 0.25s;
 }
 .source-card:hover {
   border-color: var(--accent-gold);
   background: var(--bg-hover);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 12px rgba(212, 160, 23, 0.08);
+  transform: translateY(-1px);
 }
 .source-title {
   font-size: 13px;
@@ -490,7 +533,7 @@ select, .key-input {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   color: var(--text-secondary);
   cursor: pointer;
   border: none;
@@ -498,11 +541,15 @@ select, .key-input {
   background: transparent;
   font-family: var(--font-body);
   white-space: nowrap;
+  transition: all 0.2s;
+  position: relative;
 }
-.mode-btn:hover { color: var(--text-primary); }
+.mode-btn:hover { color: var(--text-primary); background: rgba(192, 57, 43, 0.05); }
 .mode-btn.active {
   color: var(--accent-red);
   border-bottom-color: var(--accent-red);
+  text-shadow: 0 0 12px rgba(192, 57, 43, 0.4);
+  background: rgba(192, 57, 43, 0.08);
 }
 .chat-messages {
   flex: 1;
@@ -511,6 +558,9 @@ select, .key-input {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(192, 57, 43, 0.04) 0%, transparent 60%),
+    var(--bg-primary);
 }
 .msg {
   max-width: 90%;
@@ -540,11 +590,13 @@ select, .key-input {
   align-self: flex-end;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .msg-assistant {
   align-self: flex-start;
   background: var(--bg-secondary);
   border-left: 3px solid var(--accent-red);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), -3px 0 15px rgba(192, 57, 43, 0.08);
 }
 .msg-system {
   align-self: center;
@@ -600,7 +652,7 @@ select, .key-input {
   min-height: 42px;
   max-height: 180px;
 }
-.chat-input textarea:focus { outline: none; border-color: var(--accent-red); }
+.chat-input textarea:focus { outline: none; border-color: var(--accent-red); box-shadow: 0 0 12px rgba(192, 57, 43, 0.15); }
 .chat-input textarea::placeholder { color: var(--text-secondary); }
 
 /* ─── Welcome screen ─── */
@@ -610,10 +662,23 @@ select, .key-input {
   max-width: 500px;
   margin: auto;
 }
+.welcome-star {
+  font-size: 52px;
+  color: var(--accent-red);
+  display: block;
+  margin-bottom: 12px;
+  text-shadow: 0 0 30px rgba(192, 57, 43, 0.6), 0 0 60px rgba(192, 57, 43, 0.2);
+  animation: welcome-pulse 4s ease-in-out infinite;
+}
+@keyframes welcome-pulse {
+  0%, 100% { text-shadow: 0 0 30px rgba(192, 57, 43, 0.6), 0 0 60px rgba(192, 57, 43, 0.2); }
+  50% { text-shadow: 0 0 40px rgba(192, 57, 43, 0.9), 0 0 80px rgba(192, 57, 43, 0.35), 0 0 120px rgba(192, 57, 43, 0.1); }
+}
 .welcome h2 {
   color: var(--text-heading);
-  font-size: 18px;
+  font-size: 22px;
   margin-bottom: 16px;
+  letter-spacing: 1px;
 }
 .welcome p {
   color: var(--text-secondary);
@@ -630,8 +695,13 @@ select, .key-input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.welcome .key-link-row:hover {
+  background: rgba(192, 57, 43, 0.05);
 }
 .welcome .key-link-row:last-child { border-bottom: none; }
 .welcome .provider-name {
@@ -1524,7 +1594,8 @@ function setSourceFilter(cat) {
 function renderWelcome() {
   const chat = $('chatMessages');
   chat.innerHTML = `<div class="welcome">
-    <h2>&#9733; Colonel General</h2>
+    <span class="welcome-star">&#9733;</span>
+    <h2>Colonel General</h2>
     <p>A senior officer of the General Staff of the Armed Forces of the Russian Federation, standing by for wargaming exercises.</p>
     <p>Connect to an AI provider above to begin. Your API key stays in your browser — it is never stored or sent anywhere except directly to the provider.</p>
     <div class="key-links">
