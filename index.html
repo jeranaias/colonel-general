@@ -1785,10 +1785,10 @@ function useScenario(idx) {
     return;
   }
   const s = SCENARIOS[idx];
+  toast(`Launching: ${s.title}`);
+  // Auto-send the scenario
   $('chatTextarea').value = s.prompt;
-  $('chatTextarea').focus();
-  $('chatTextarea').dispatchEvent(new Event('input'));
-  toast(`Loaded: ${s.title}`);
+  sendMessage();
 }
 
 const DEFAULT_MODES = [
