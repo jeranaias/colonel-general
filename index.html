@@ -614,9 +614,26 @@ select, .key-input {
   letter-spacing: 1px;
   margin-bottom: 5px;
   font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .msg-user .msg-label { color: var(--accent-blue); }
 .msg-assistant .msg-label { color: var(--accent-red); }
+.msg-copy {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 4px;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+  font-family: var(--font-body);
+}
+.msg:hover .msg-copy { opacity: 1; }
+.msg-copy:hover { color: var(--text-primary); }
+.msg-copy.copied { color: var(--accent-green); }
 .typing-indicator {
   align-self: flex-start;
   color: var(--text-secondary);
@@ -720,6 +737,107 @@ select, .key-input {
   font-weight: 600;
 }
 .welcome a:hover { text-decoration: underline; }
+
+/* ─── Scenario starters ─── */
+.scenario-starters {
+  margin-top: 24px;
+  text-align: left;
+}
+.scenario-starters h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  text-align: center;
+}
+.scenario-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.scenario-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: left;
+}
+.scenario-card:hover {
+  border-color: var(--accent-red);
+  background: var(--bg-hover);
+  box-shadow: 0 2px 12px rgba(192, 57, 43, 0.12);
+  transform: translateY(-1px);
+}
+.scenario-card .sc-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 3px;
+}
+.scenario-card .sc-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ─── Toast notifications ─── */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-green);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: toast-in 0.3s ease-out, toast-out 0.3s ease-in forwards;
+  animation-delay: 0s, 2.7s;
+  pointer-events: auto;
+}
+.toast.error { border-left-color: var(--accent-red); }
+@keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateX(40px); } }
+
+/* ─── Chat toolbar ─── */
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chat-toolbar button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.chat-toolbar button:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
 
 /* ─── Help modal ─── */
 .modal-overlay {
@@ -849,6 +967,10 @@ select, .key-input {
   <!-- ═══ Chat panel ═══ -->
   <div class="panel panel-chat" id="panelChat">
     <div class="chat-modes" id="chatModes"></div>
+    <div class="chat-toolbar" id="chatToolbar" style="display:none">
+      <button onclick="exportChat()" title="Download transcript">Export</button>
+      <button onclick="newConversation()" title="Start fresh">New Chat</button>
+    </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input" id="chatInput">
       <textarea id="chatTextarea" placeholder="Present a scenario or ask a question..." rows="1"
@@ -858,6 +980,9 @@ select, .key-input {
     </div>
   </div>
 </div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
 
 <!-- ═══ Help Modal ═══ -->
 <div class="modal-overlay hidden" id="helpModal" onclick="if(event.target===this)this.classList.add('hidden')">
@@ -1359,7 +1484,7 @@ function onProviderChange() {
 
 function connect() {
   const key = $('inpKey').value.trim();
-  if (!key) { alert('Please enter an API key. Click the link next to the key field to get one.'); return; }
+  if (!key) { toast('Enter an API key. Click the link next to the key field to get one.', 'error'); return; }
   state.apiKey = key;
   state.model = $('selModel').value;
   state.provider = $('selProvider').value;
@@ -1367,12 +1492,20 @@ function connect() {
   state.messages = [];
 
   $('statusDot').classList.add('on');
+  $('chatToolbar').style.display = '';
   saveSettings();
+
+  const modelName = $('selModel').selectedOptions[0].textContent;
+  toast(`Connected to ${modelName}`);
 
   const chat = $('chatMessages');
   chat.innerHTML = '';
-  addSystemMsg(`Connected to ${$('selModel').selectedOptions[0].textContent}. Mode: ${state.mode.toUpperCase()}.`);
-  addSystemMsg('Colonel General is standing by. Present a scenario or ask a question.');
+
+  // Auto-greeting from the Colonel General
+  const greeting = `I am prepared to participate in this exercise. As a senior officer of the General Staff, I bring expertise in operational planning, strategic analysis, and the full spectrum of Russian military doctrine.\n\nYou may present a scenario for assessment, designate a wargame mode, or pose a strategic question. I will respond in accordance with the doctrinal frameworks of the Russian Armed Forces.\n\nWhat is the exercise scenario?`;
+  state.messages.push({ role: 'assistant', content: greeting });
+  addMsg('assistant', greeting, true);
+
   $('chatTextarea').focus();
 }
 
@@ -1591,8 +1724,24 @@ function setSourceFilter(cat) {
 // ║  CHAT PANEL       ║
 // ╚══════════════════╝
 
+const SCENARIOS = [
+  { title: 'Baltic Crisis', desc: 'NATO exercises near Kaliningrad trigger a confrontation spiral.', prompt: 'Scenario: NATO has announced a major military exercise involving 40,000 troops in the Baltic states, with forces deploying within 100km of Kaliningrad. Simultaneously, cyber attacks of unknown origin have disrupted communications in the Suwalki corridor. The exercise is scheduled to begin in 72 hours. Assess this situation and recommend a course of action.' },
+  { title: 'Arctic Standoff', desc: 'Disputed Northern Sea Route transit escalates tensions.', prompt: 'Scenario: A US Navy destroyer has entered the Northern Sea Route without requesting permission from Russian authorities, citing freedom of navigation. Russian Northern Fleet assets are tracking the vessel. A US submarine has also been detected near the Kola Peninsula. The US State Department has issued a statement defending the transit. How does Russia respond?' },
+  { title: 'Syrian Escalation', desc: 'Deconfliction breakdown threatens direct great-power contact.', prompt: 'Scenario: An Israeli airstrike on a target near Latakia has killed 3 Russian military advisors at a Syrian air defense facility. Russia\'s deconfliction hotline with the US was not used prior to the strike. Russian public opinion is demanding a response, and the MFA has summoned the Israeli ambassador. What is your assessment and recommended response?' },
+  { title: 'Color Revolution', desc: 'A former Soviet state faces Western-backed political upheaval.', prompt: 'Scenario: Mass protests have erupted in Belarus following disputed elections. Western governments have refused to recognize the results and are imposing sanctions. Opposition leaders are receiving support from Polish and Lithuanian NGOs. There are reports of Western social media campaigns amplifying protest messaging. Russia has a CSTO obligation and a Union State agreement with Belarus. Assess the situation and recommend a comprehensive response across all instruments of power.' },
+  { title: 'Black Sea Incident', desc: 'Naval confrontation near Crimea tests escalation thresholds.', prompt: 'Scenario: A British destroyer has entered waters near Crimea that Russia claims as territorial waters. Russian coast guard vessels have issued warnings. A Su-24 has conducted a low pass over the destroyer. The UK Ministry of Defence states the ship is exercising innocent passage through Ukrainian territorial waters. A second NATO vessel is approaching from the Turkish straits. Recommend Russia\'s response.' },
+  { title: 'Nuclear Signaling', desc: 'Conventional conflict approaches the nuclear threshold.', prompt: 'Scenario: In a hypothetical large-scale conventional conflict, NATO precision strikes have destroyed 60% of Russia\'s Western Military District command infrastructure and have begun targeting early warning radar installations. Russia\'s conventional forces are being pushed back. Intelligence suggests NATO is planning strikes on strategic submarine bases. We are approaching the threshold defined in the 2020 Basic Principles. Assess the correlation of forces and recommend a course of action, including nuclear signaling options.' },
+];
+
 function renderWelcome() {
   const chat = $('chatMessages');
+  let scenarioHtml = SCENARIOS.map((s, i) =>
+    `<div class="scenario-card" onclick="useScenario(${i})">
+      <div class="sc-title">${s.title}</div>
+      <div class="sc-desc">${s.desc}</div>
+    </div>`
+  ).join('');
+
   chat.innerHTML = `<div class="welcome">
     <span class="welcome-star">&#9733;</span>
     <h2>Colonel General</h2>
@@ -1621,8 +1770,25 @@ function renderWelcome() {
         <a href="https://console.anthropic.com/settings/keys" target="_blank">Get key &rarr;</a>
       </div>
     </div>
+    <div class="scenario-starters">
+      <h3>Quick-Start Scenarios</h3>
+      <div class="scenario-grid">${scenarioHtml}</div>
+    </div>
     <p style="margin-top:16px;font-size:11px;color:var(--text-secondary)">Use the <strong>Learn</strong> panel on the left to explore how the system prompt was built and why each section exists.</p>
   </div>`;
+}
+
+function useScenario(idx) {
+  if (!state.connected) {
+    toast('Connect to an AI provider first', 'error');
+    $('inpKey').focus();
+    return;
+  }
+  const s = SCENARIOS[idx];
+  $('chatTextarea').value = s.prompt;
+  $('chatTextarea').focus();
+  $('chatTextarea').dispatchEvent(new Event('input'));
+  toast(`Loaded: ${s.title}`);
 }
 
 const DEFAULT_MODES = [
@@ -1710,24 +1876,103 @@ function renderMarkdown(text) {
   return html;
 }
 
-function addMsg(role, text) {
+function addMsg(role, text, typewriter = false) {
   const chat = $('chatMessages');
   const div = document.createElement('div');
   div.className = `msg msg-${role}`;
+  div.dataset.raw = text;
   const label = document.createElement('div');
   label.className = 'msg-label';
-  label.textContent = role === 'user' ? 'You' : 'Colonel General';
+  const labelText = document.createElement('span');
+  labelText.textContent = role === 'user' ? 'You' : 'Colonel General';
+  label.appendChild(labelText);
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'msg-copy';
+  copyBtn.textContent = 'Copy';
+  copyBtn.onclick = () => copyMessage(copyBtn, text);
+  label.appendChild(copyBtn);
   div.appendChild(label);
   const content = document.createElement('div');
   content.className = 'msg-content';
-  if (role === 'assistant') {
-    content.innerHTML = renderMarkdown(text);
+  if (role === 'assistant' && typewriter) {
+    div.appendChild(content);
+    chat.appendChild(div);
+    typewriterRender(content, text, chat);
   } else {
-    content.textContent = text;
+    if (role === 'assistant') {
+      content.innerHTML = renderMarkdown(text);
+    } else {
+      content.textContent = text;
+    }
+    div.appendChild(content);
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
   }
-  div.appendChild(content);
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+}
+
+function typewriterRender(el, text, chat) {
+  const words = text.split(/(\s+)/);
+  let i = 0;
+  let accumulated = '';
+  const step = () => {
+    if (i < words.length) {
+      accumulated += words[i];
+      i++;
+      // Render in batches of 3 words for speed
+      if (i % 3 === 0 || i >= words.length) {
+        el.innerHTML = renderMarkdown(accumulated);
+        chat.scrollTop = chat.scrollHeight;
+      }
+      requestAnimationFrame(step);
+    }
+  };
+  requestAnimationFrame(step);
+}
+
+function copyMessage(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+function toast(msg, type) {
+  const container = $('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'error' ? ' error' : '');
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function exportChat() {
+  if (!state.messages.length) { toast('No messages to export', 'error'); return; }
+  let text = `Colonel General — Wargame Transcript\n`;
+  text += `Mode: ${state.mode.toUpperCase()}\n`;
+  text += `Date: ${new Date().toLocaleString()}\n`;
+  text += `${'═'.repeat(50)}\n\n`;
+  state.messages.forEach(m => {
+    const label = m.role === 'user' ? 'YOU' : 'COLONEL GENERAL';
+    text += `[${label}]\n${m.content}\n\n`;
+  });
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `wargame-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Transcript exported');
+}
+
+function newConversation() {
+  state.messages = [];
+  const chat = $('chatMessages');
+  chat.innerHTML = '';
+  const greeting = `Understood. A new exercise. I am ready to receive the scenario.\n\nWhat situation do you wish to assess?`;
+  state.messages.push({ role: 'assistant', content: greeting });
+  addMsg('assistant', greeting, true);
+  toast('New conversation started');
 }
 
 function showTyping() {
@@ -1747,7 +1992,7 @@ function hideTyping() {
 
 async function sendMessage() {
   if (state.sending) return;
-  if (!state.connected) { alert('Please connect to a provider first (enter your API key and click Connect).'); return; }
+  if (!state.connected) { toast('Connect to a provider first — enter your API key and click Connect.', 'error'); return; }
 
   const input = $('chatTextarea');
   const text = input.value.trim();
@@ -1769,7 +2014,7 @@ async function sendMessage() {
     const reply = await provider.send(state.messages, systemPrompt, state.model, state.apiKey);
     state.messages.push({ role: 'assistant', content: reply });
     hideTyping();
-    addMsg('assistant', reply);
+    addMsg('assistant', reply, true);
   } catch (err) {
     hideTyping();
     addSystemMsg('Error: ' + err.message);
